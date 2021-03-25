@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from ex2_utils import Tracker
+from ex2_utils import *
 
 
 class NCCTracker(Tracker):
@@ -39,13 +39,13 @@ class NCCTracker(Tracker):
         cut = image[int(top):int(bottom), int(left):int(right)]
 
         matches = cv2.matchTemplate(cut, self.template, cv2.TM_CCOEFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(matches)
+        _, _, _, max_loc = cv2.minMaxLoc(matches)
 
         self.position = (left + max_loc[0] + float(self.size[0]) / 2, top + max_loc[1] + float(self.size[1]) / 2)
 
         return [left + max_loc[0], top + max_loc[1], self.size[0], self.size[1]]
 
+
 class NCCParams():
     def __init__(self):
         self.enlarge_factor = 2
-

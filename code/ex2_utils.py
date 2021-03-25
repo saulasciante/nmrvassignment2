@@ -12,6 +12,7 @@ def generate_responses_1():
     responses[50, 70] = 0.5
     return gausssmooth(responses, 10)
 
+
 def get_patch(img, center, sz):
     # crop coordinates
     x0 = round(int(center[0] - sz[0] / 2))
@@ -38,6 +39,7 @@ def get_patch(img, center, sz):
     crop_mask = cv2.copyMakeBorder(crop_mask, y0_pad, y1_pad, x0_pad, x1_pad, cv2.BORDER_CONSTANT, value=0)
     return im_crop_padded, crop_mask
 
+
 def create_epanechnik_kernel(width, height, sigma):
     # make sure that width and height are odd
     w2 = int(math.floor(width / 2))
@@ -52,12 +54,13 @@ def create_epanechnik_kernel(width, height, sigma):
     kernel[kernel<0] = 0
     return kernel
 
+
 def extract_histogram(patch, nbins, weights=None):
     # Note: input patch must be a BGR image (3 channel numpy array)
     # convert each pixel intensity to the one of nbins bins
     channel_bin_idxs = np.floor((patch.astype(np.float32) / float(255)) * float(nbins - 1))
     # calculate bin index of a 3D histogram
-    bin_idxs = (channel_bin_idxs[:, :, 0] * nbins**2  + channel_bin_idxs[:, :, 1] * nbins + channel_bin_idxs[:, :, 2]).astype(np.int32)
+    bin_idxs = (channel_bin_idxs[:, :, 0] * nbins**2 + channel_bin_idxs[:, :, 1] * nbins + channel_bin_idxs[:, :, 2]).astype(np.int32)
 
     # count bin indices to create histogram (use per-pixel weights if given)
     if weights is not None:
@@ -69,16 +72,23 @@ def extract_histogram(patch, nbins, weights=None):
     histogram[:histogram_.size] = histogram_
     return histogram
 
+
 def backproject_histogram(patch, histogram, nbins):
     # Note: input patch must be a BGR image (3 channel numpy array)
     # convert each pixel intensity to the one of nbins bins
     channel_bin_idxs = np.floor((patch.astype(np.float32) / float(255)) * float(nbins - 1))
     # calculate bin index of a 3D histogram
-    bin_idxs = (channel_bin_idxs[:, :, 0] * nbins**2  + channel_bin_idxs[:, :, 1] * nbins + channel_bin_idxs[:, :, 2]).astype(np.int32)
+    bin_idxs = (channel_bin_idxs[:, :, 0] * nbins**2 + channel_bin_idxs[:, :, 1] * nbins + channel_bin_idxs[:, :, 2]).astype(np.int32)
 
     # use histogram us a lookup table for pixel backprojection
     backprojection = np.reshape(histogram[bin_idxs.flatten()], (patch.shape[0], patch.shape[1]))
     return backprojection
+
+
+def show_image(img, delay):
+    cv2.imshow("img", img)
+    cv2.waitKey(delay)
+
 
 # base class for tracker
 class Tracker():

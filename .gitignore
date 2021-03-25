@@ -2,3 +2,6 @@ venv/*
 env/*
 .idea/*
 __pycache__/*
+data/vot13/*
+data/vot14/*
+code/__pycache__/*

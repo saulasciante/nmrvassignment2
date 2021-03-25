@@ -4,12 +4,12 @@ import cv2
 
 from sequence_utils import VOTSequence
 from ncc_tracker_example import NCCTracker, NCCParams
-#from ms_tracker import MeanShiftTracker, MSParams
+from mean_shift_tracker import MeanShiftTracker, MSParams
 
 
 # set the path to directory where you have the sequences
-dataset_path = '' # TODO: set to the dataet path on your disk
-sequence = 'bolt1'  # choose the sequence you want to test
+dataset_path = '../data/vot14/'  # TODO: set to the dataset path on your disk
+sequence = 'bicycle'  # choose the sequence you want to test
 
 # visualization and setup parameters
 win_name = 'Tracking window'
