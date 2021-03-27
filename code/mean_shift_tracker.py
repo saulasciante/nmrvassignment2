@@ -3,10 +3,25 @@ import numpy as np
 from ex2_utils import *
 
 
-def mean_shift(prevPos, template, cut):
-    prevCenter = (prevPos[0][0] + (prevPos[1][0] / 2), prevPos[0][1] + (prevPos[1][1] / 2))
-    sz = ((prevPos[0][0] + prevPos[1][0]) / 2, (prevPos[0][1] + prevPos[1][1]) / 2)
-    patch = get_patch(cut, prevCenter, sz)
+def normalize_histogram(histogram):
+    bin_sum = sum(histogram)
+    return np.array([el/bin_sum for el in histogram])
+
+
+# def mean_shift(image, prevPos, template_histogram, size, kernel, nbins, eps):
+#     currPos = prevPos
+#     converged = False
+#
+#     while not converged:
+#         patch, mask = get_patch(image, currPos, size)
+#         histogram = normalize_histogram(extract_histogram(patch, nbins, weights=kernel))
+#
+#         show_histogram(template_histogram)
+#         show_histogram(histogram)
+#
+#         weights = np.sqrt(np.divide(template_histogram, histogram + eps))
+#         show_histogram(weights)
+#         exit()
 
 
 class MeanShiftTracker(Tracker):
@@ -26,9 +41,13 @@ class MeanShiftTracker(Tracker):
         right = min(region[0] + region[2], image.shape[1] - 1)
         bottom = min(region[1] + region[3], image.shape[0] - 1)
 
-        self.template = image[int(top):int(bottom), int(left):int(right)]
         self.position = (region[0] + region[2] / 2, region[1] + region[3] / 2)
         self.size = (region[2], region[3])
+        self.template = image[int(top):int(bottom), int(left):int(right)]
+        self.kernel = create_epanechnik_kernel(self.size[0], self.size[1], self.parameters.kernel_sigma)
+        self.template_histogram = normalize_histogram(extract_histogram(self.template,
+                                                                        self.parameters.histogram_bins,
+                                                                        weights=self.kernel))
 
     def track(self, image):
 
@@ -39,18 +58,27 @@ class MeanShiftTracker(Tracker):
         bottom = min(round(self.position[1] + float(self.window) / 2), image.shape[0] - 1)
 
         if right - left < self.template.shape[1] or bottom - top < self.template.shape[0]:
-            return [self.position[0] + self.size[0] / 2, self.position[1] + self.size[1] / 2, self.size[0], self.size[1]]
+            return [self.position[0] + self.size[0] / 2, self.position[1] + self.size[1] / 2, self.size[0],
+                    self.size[1]]
 
-        cut = image[int(top):int(bottom), int(left):int(right)]
+        mean_shift(image,
+                   self.position,
+                   self.template_histogram,
+                   self.size,
+                   self.kernel,
+                   self.parameters.histogram_bins,
+                   self.parameters.epsilon)
 
-        matches = cv2.matchTemplate(cut, self.template, cv2.TM_CCOEFF_NORMED)
-        _, _, _, max_loc = cv2.minMaxLoc(matches)
-
-        self.position = (left + max_loc[0] + float(self.size[0]) / 2, top + max_loc[1] + float(self.size[1]) / 2)
-
-        return [left + max_loc[0], top + max_loc[1], self.size[0], self.size[1]]
+        # self.position = (left + max_loc[0] + float(self.size[0]) / 2, top + max_loc[1] + float(self.size[1]) / 2)
+        #
+        # return [left + max_loc[0], top + max_loc[1], self.size[0], self.size[1]]
 
 
 class MSParams():
     def __init__(self):
         self.enlarge_factor = 2
+        # self.kernelW = 22
+        # self.kernelH = 22
+        self.kernel_sigma = 0.5
+        self.histogram_bins = 16
+        self.epsilon = 0.1

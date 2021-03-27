@@ -1,5 +1,6 @@
 import math
 
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
@@ -51,7 +52,7 @@ def create_epanechnik_kernel(width, height, sigma):
 
     kernel = (1 - ((X / sigma)**2 + (Y / sigma)**2))
     kernel = kernel / np.max(kernel)
-    kernel[kernel<0] = 0
+    kernel[kernel < 0] = 0
     return kernel
 
 
@@ -64,6 +65,13 @@ def extract_histogram(patch, nbins, weights=None):
 
     # count bin indices to create histogram (use per-pixel weights if given)
     if weights is not None:
+        # rows, columns = weights.shape
+        #
+        # if rows % 2 == 1:
+        #     weights = np.delete(weights, -1, axis=0)
+        # if columns % 2 == 1:
+        #     weights = np.delete(weights, -1, axis=1)
+
         histogram_ = np.bincount(bin_idxs.flatten(), weights=weights.flatten())
     else:
         histogram_ = np.bincount(bin_idxs.flatten())
@@ -85,9 +93,14 @@ def backproject_histogram(patch, histogram, nbins):
     return backprojection
 
 
-def show_image(img, delay):
-    cv2.imshow("img", img)
-    cv2.waitKey(delay)
+def show_image(img, delay_key, title):
+    cv2.imshow(title, img)
+    cv2.waitKey(delay_key)
+
+
+def show_histogram(histogram):
+    plt.hist(histogram, bins=len(histogram))
+    plt.show()
 
 
 # base class for tracker
