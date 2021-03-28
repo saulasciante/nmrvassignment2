@@ -43,10 +43,10 @@ def get_patch(img, center, sz):
 
 def create_epanechnik_kernel(width, height, sigma):
     # make sure that width and height are odd
-    w2 = int(math.floor(width / 2))
-    h2 = int(math.floor(height / 2))
+    w2 = int(math.floor(width / 2)) + 1 if width % 2 == 1 else int(math.floor(width / 2))
+    h2 = int(math.floor(height / 2)) + 1 if height % 2 == 1 else int(math.floor(height / 2))
 
-    [X, Y] = np.meshgrid(np.arange(-w2, w2 + 1), np.arange(-h2, h2 + 1))
+    [X, Y] = np.meshgrid(np.arange(-w2, w2 - 1), np.arange(-h2, h2 - 1))
     X = X / np.max(X)
     Y = Y / np.max(Y)
 
@@ -57,6 +57,14 @@ def create_epanechnik_kernel(width, height, sigma):
 
 
 def extract_histogram(patch, nbins, weights=None):
+    if weights is not None:
+        patch_rows, patch_cols, _ = patch.shape
+
+        if patch_rows % 2 == 0:
+            patch = np.delete(patch, -1, axis=0)
+        if patch_cols % 2 == 0:
+            patch = np.delete(patch, -1, axis=1)
+
     # Note: input patch must be a BGR image (3 channel numpy array)
     # convert each pixel intensity to the one of nbins bins
     channel_bin_idxs = np.floor((patch.astype(np.float32) / float(255)) * float(nbins - 1))
@@ -65,13 +73,6 @@ def extract_histogram(patch, nbins, weights=None):
 
     # count bin indices to create histogram (use per-pixel weights if given)
     if weights is not None:
-        # rows, columns = weights.shape
-        #
-        # if rows % 2 == 1:
-        #     weights = np.delete(weights, -1, axis=0)
-        # if columns % 2 == 1:
-        #     weights = np.delete(weights, -1, axis=1)
-
         histogram_ = np.bincount(bin_idxs.flatten(), weights=weights.flatten())
     else:
         histogram_ = np.bincount(bin_idxs.flatten())
@@ -81,7 +82,15 @@ def extract_histogram(patch, nbins, weights=None):
     return histogram
 
 
-def backproject_histogram(patch, histogram, nbins):
+def backproject_histogram(patch, histogram, nbins, kernel=None):
+    if kernel is not None:
+        patch_rows, patch_cols, _ = patch.shape
+
+        if patch_rows % 2 == 0:
+            patch = np.delete(patch, -1, axis=0)
+        if patch_cols % 2 == 0:
+            patch = np.delete(patch, -1, axis=1)
+
     # Note: input patch must be a BGR image (3 channel numpy array)
     # convert each pixel intensity to the one of nbins bins
     channel_bin_idxs = np.floor((patch.astype(np.float32) / float(255)) * float(nbins - 1))

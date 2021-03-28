@@ -6,23 +6,28 @@ from math import floor
 
 def create_kernel(kernel_size):
     # make sure kernel size is odd
-    kernel_size = kernel_size - 1 if kernel_size % 2 == 0 else kernel_size
+    kernel_size = [int(ks - 1) if ks % 2 == 0 else int(ks) for ks in kernel_size]
 
-    kernel_y = np.zeros((kernel_size, kernel_size))
+    kernel_x = np.zeros((kernel_size[0], kernel_size[1]))
 
-    for row, value in enumerate(range(-(kernel_size // 2), (kernel_size // 2) + 1, 1)):
+    for col, value in enumerate(range(-(kernel_size[1] // 2), (kernel_size[1] // 2) + 1, 1)):
+        kernel_x[:, col] = value
+
+    kernel_y = np.zeros((kernel_size[0], kernel_size[1]))
+
+    for row, value in enumerate(range(-(kernel_size[0] // 2), (kernel_size[0] // 2) + 1, 1)):
         kernel_y[row] = value
 
-    kernel_x = np.transpose(kernel_y)
 
     return kernel_x, kernel_y
 
 
 def mean_shift(responses, position, kernel_size, epsilon):
-    kernel_x, kernel_y = create_kernel(kernel_size)
-    patch_size = kernel_x.shape
+    kernel_x, kernel_y = create_kernel(kernel_size[1])
+    patch_size = (kernel_size[0], kernel_size[1])
 
     converged = False
+    iters = 0
 
     while not converged:
         w, inliers = get_patch(responses, position, patch_size)
@@ -43,15 +48,19 @@ def mean_shift(responses, position, kernel_size, epsilon):
             converged = True
 
         position = position[0] + x_change, position[1] + y_change
+        iters += 1
 
-    return int(floor(position[0])), int(floor(position[1]))
+        # if iters % 100 == 0:
+            # print(iters)
+
+    return int(floor(position[0])), int(floor(position[1])), iters
 
 
 if __name__ == "__main__":
     responses = generate_responses_1()
     # show_image(responses * 400, 0, "responses")
-    kernel_size = 5
-    epsilon = 0.05
-    starting_position = (30, 70)
-    max_x, max_y = mean_shift(responses, starting_position, kernel_size, epsilon)
-    print(max_x, max_y, responses[max_x][max_y])
+    kernel_size = (5, 5)
+    epsilon = 0.01
+    starting_position = (50, 50)
+    max_x, max_y, iters = mean_shift(responses, starting_position, kernel_size, epsilon)
+    print(max_x, max_y, responses[max_x][max_y], iters)
