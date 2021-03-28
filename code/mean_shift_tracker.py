@@ -1,6 +1,7 @@
 from math import floor
 
 import numpy as np
+import cv2
 
 from ex2_utils import get_patch, create_epanechnik_kernel, extract_histogram, backproject_histogram, Tracker, show_image
 from mean_shift import create_kernel
@@ -46,8 +47,8 @@ def mean_shift(image, position, size, q, kernel, nbins, epsilon):
 
         if abs(x_change) < epsilon and abs(y_change) < epsilon:
             converged = True
-
-        position = position[0] + x_change, position[1] + y_change
+        else:
+            position = position[0] + x_change, position[1] + y_change
         iters += 1
 
         # if iters % 100 == 0:
@@ -105,6 +106,15 @@ class MeanShiftTracker(Tracker):
         self.q = (1 - self.parameters.update_alpha) * self.q + self.parameters.update_alpha * normalize_histogram(extract_histogram(self.template, self.parameters.histogram_bins, weights=self.kernel))
 
         self.position = (new_x, new_y)
+        # print(self.position)
+        # start_point = (int(new_x - self.size[0] // 2), int(new_y - self.size[1] // 2))
+        # end_point = (int(new_x + self.size[0] // 2), int(new_y + self.size[1] // 2))
+        # image = cv2.rectangle(image,
+        #                       start_point,
+        #                       end_point,
+        #                       (255, 0, 0),
+        #                       2)
+        # show_image(image, 0, "ssss")
         return [new_x, new_y, self.size[0], self.size[1]]
 
 

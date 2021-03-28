@@ -41,6 +41,8 @@ class NCCTracker(Tracker):
         matches = cv2.matchTemplate(cut, self.template, cv2.TM_CCOEFF_NORMED)
         _, _, _, max_loc = cv2.minMaxLoc(matches)
 
+        templateTest, _ = get_patch(image, (left + max_loc[0] + float(self.size[0]) / 2, top + max_loc[1] + float(self.size[1]) / 2), self.size)
+        # show_image(templateTest, 0, "ssss")
         self.position = (left + max_loc[0] + float(self.size[0]) / 2, top + max_loc[1] + float(self.size[1]) / 2)
 
         return [left + max_loc[0], top + max_loc[1], self.size[0], self.size[1]]

@@ -9,7 +9,7 @@ from mean_shift_tracker import MeanShiftTracker, MSParams
 
 # set the path to directory where you have the sequences
 dataset_path = '../data/'  # TODO: set to the dataset path on your disk
-sequence = 'bicycle'  # choose the sequence you want to test
+sequence = 'car'  # choose the sequence you want to test
 
 # visualization and setup parameters
 win_name = 'Tracking window'
