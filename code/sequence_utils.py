@@ -82,6 +82,11 @@ class VOTSequence():
         self.window_name = window_name
         cv2.namedWindow(self.window_name, cv2.WINDOW_AUTOSIZE)
 
+    def draw_region_ms(self, img, box_params, color, line_width):
+        start_point = (int(box_params[0] - box_params[2] // 2), int(box_params[1] - box_params[3] // 2))
+        end_point = (int(box_params[0] + box_params[2] // 2), int(box_params[1] + box_params[3] // 2))
+        cv2.rectangle(img, start_point, end_point, color, line_width)
+
     def draw_region(self, img, region, color, line_width):
         if len(region) == 4:
             # rectangle

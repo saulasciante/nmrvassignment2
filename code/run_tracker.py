@@ -9,7 +9,7 @@ from mean_shift_tracker import MeanShiftTracker, MSParams
 
 # set the path to directory where you have the sequences
 dataset_path = '../data/'  # TODO: set to the dataset path on your disk
-sequence = 'car'  # choose the sequence you want to test
+sequence = 'bolt'  # choose the sequence you want to test
 
 # visualization and setup parameters
 win_name = 'Tracking window'
@@ -25,8 +25,10 @@ n_failures = 0
 # create parameters and tracker objects
 # parameters = NCCParams()
 # tracker = NCCTracker(parameters)
+# tryckerType = "NCC"
 parameters = MSParams()
 tracker = MeanShiftTracker(parameters)
+trackerType = "MS"
 
 time_all = 0
 
@@ -56,7 +58,11 @@ while frame_idx < sequence.length():
     # draw ground-truth and predicted bounding boxes, frame numbers and show image
     if show_gt:
         sequence.draw_region(img, gt_bb, (0, 255, 0), 1)
-    sequence.draw_region(img, predicted_bbox, (0, 0, 255), 2)
+
+    if trackerType == "MS":
+        sequence.draw_region_ms(img, predicted_bbox, (255, 0, 0), 2)
+    else:
+        sequence.draw_region(img, predicted_bbox, (0, 0, 255), 2)
     sequence.draw_text(img, '%d/%d' % (frame_idx + 1, sequence.length()), (25, 25))
     sequence.draw_text(img, 'Fails: %d' % n_failures, (25, 55))
     sequence.show_image(img, video_delay)
