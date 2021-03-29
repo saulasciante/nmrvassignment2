@@ -75,7 +75,7 @@ class MeanShiftTracker(Tracker):
         bottom = min(region[1] + region[3], image.shape[0] - 1)
 
         self.position = (region[0] + region[2] / 2, region[1] + region[3] / 2)
-        self.size = (region[2], region[3])
+        self.size = (round(region[2]), round(region[3]))
         self.template = image[int(top):int(bottom), int(left):int(right)]
         self.kernel = create_epanechnik_kernel(self.size[0], self.size[1], self.parameters.kernel_sigma)
         self.q = normalize_histogram(extract_histogram(self.template,
@@ -106,22 +106,13 @@ class MeanShiftTracker(Tracker):
         self.q = (1 - self.parameters.update_alpha) * self.q + self.parameters.update_alpha * normalize_histogram(extract_histogram(self.template, self.parameters.histogram_bins, weights=self.kernel))
 
         self.position = (new_x, new_y)
-        # print(self.position)
-        # start_point = (int(new_x - self.size[0] // 2), int(new_y - self.size[1] // 2))
-        # end_point = (int(new_x + self.size[0] // 2), int(new_y + self.size[1] // 2))
-        # image = cv2.rectangle(image,
-        #                       start_point,
-        #                       end_point,
-        #                       (255, 0, 0),
-        #                       2)
-        # show_image(image, 0, "ssss")
         return [new_x, new_y, self.size[0], self.size[1]]
 
 
 class MSParams():
     def __init__(self):
         self.enlarge_factor = 2
-        self.mean_shift_kernel_size = 5
+        # self.mean_shift_kernel_size = 5
         self.kernel_sigma = 0.5
         self.histogram_bins = 16
         self.epsilon = 1
