@@ -51,10 +51,7 @@ def mean_shift(image, position, size, q, kernel, nbins, epsilon):
             position = position[0] + x_change, position[1] + y_change
         iters += 1
 
-        # if iters % 100 == 0:
-            # print(iters)
-
-    return int(floor(position[0])), int(floor(position[1]))
+    return int(floor(position[0])), int(floor(position[1])), iters
 
 
 class MeanShiftTracker(Tracker):
@@ -91,9 +88,9 @@ class MeanShiftTracker(Tracker):
 
         if right - left < self.template.shape[1] or bottom - top < self.template.shape[0]:
             return [self.position[0] + self.size[0] / 2, self.position[1] + self.size[1] / 2, self.size[0],
-                    self.size[1]]
+                    self.size[1]], 0
 
-        new_x, new_y = mean_shift(image,
+        new_x, new_y, iters = mean_shift(image,
                                   self.position,
                                   self.size,
                                   self.q,
@@ -106,7 +103,7 @@ class MeanShiftTracker(Tracker):
         self.q = (1 - self.parameters.update_alpha) * self.q + self.parameters.update_alpha * normalize_histogram(extract_histogram(self.template, self.parameters.histogram_bins, weights=self.kernel))
 
         self.position = (new_x, new_y)
-        return [new_x, new_y, self.size[0], self.size[1]]
+        return [new_x, new_y, self.size[0], self.size[1]], iters
 
 
 class MSParams():
@@ -116,4 +113,4 @@ class MSParams():
         self.kernel_sigma = 0.5
         self.histogram_bins = 16
         self.epsilon = 1
-        self.update_alpha = 0
+        self.update_alpha = 0.5
